@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+service ChatService {
+  rpc SaveMessage (Message) returns (MessageResponse);
+  rpc GetMessages (CourseRequest) returns (MessagesResponse);
+  rpc VerifyAccess (AccessRequest) returns (AccessResponse);
+}
+
+message Message {
+  string id = 1;
+  string courseId = 2;
+  string userId = 3;
+  string content = 4;
+  string timestamp = 5;
+  string username = 6;
+}
+message MessageResponse {
+  Message message = 1;
+  bool success = 2;
+  string error = 3;
+}
+
+message CourseRequest {
+  string courseId = 1;
+  optional int32 limit = 2;
+  optional string before = 3;
+}
+
+message MessagesResponse {
+  repeated Message messages = 1;
+  bool hasMore = 2;
+  string error = 3;
+}
+
+message AccessRequest {
+  string userId = 1;
+  string courseId = 2;
+}
+
+message AccessResponse {
+  bool hasAccess = 1;
+  string error = 2;
+}
