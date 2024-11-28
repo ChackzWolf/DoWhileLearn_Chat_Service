@@ -23,4 +23,11 @@ export class ChatMessageRepository {
 
     return { messages, total };
   }
+
+  async countUnreadMessages(courseId: string, lastRead: Date): Promise<number> {
+    return ChatMessageModel.countDocuments({
+      courseId,
+      timestamp: { $gt: lastRead },
+    });
+  }
 }

@@ -26,20 +26,20 @@ export const startGrpcServer = () => {
     (err, port) => {
       if (err) {
         console.error("Failed to start gRPC server", err);
-        return;
+        return; 
       }
       console.log(`gRPC server is running on port ${port}`);
     }
-  );
+  ); 
 
 
 
 
   server.addService(chatProto.ChatService.service , {
     saveMessage: ChatController.saveMessage,
-    GetMessages: ChatController.getCourseMessages
+    GetMessages: ChatController.getCourseMessages,
+    GetChatRooms: ChatController.getChatRooms,
+    CreateChatRoom: ChatController.createChatRoom,
+    GetUserChatRooms: ChatController.chatRoomForUser,
   });
-
-
-
 };
