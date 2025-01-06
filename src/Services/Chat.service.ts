@@ -16,12 +16,22 @@ export class ChatService {
     this.chatRoomRepo = new ChatRoomRepository();
   }
 
-
+  async createChatRoom(data:{courseId:string, courseName:string, thumbnail:string, tutorId:string}):Promise<{success:boolean}>{
+    console.log('trig service',data)
+    const {courseId, courseName, thumbnail, tutorId} = data;
+    const chatRoom = await this.chatRoomRepo.createChatRoom(courseId, courseName, thumbnail, tutorId);
+    console.log('created chatroom (service)')
+    if(!chatRoom){
+      return {success:false}
+    }
+    return {success:true}
+  }
 
   async addParticipantToChatRoom(paymentEvent:any) {
     try {
       const {courseId, userId, transactionId} = paymentEvent;
       const response = this.chatRoomRepo.addParticipant(courseId,userId);
+      console.log('response froim repo', response)
       if(!response){
         throw new Error("chatroom success is false");
       }
@@ -29,17 +39,17 @@ export class ChatService {
       await kafkaConfig.sendMessage('chat.response', {
         success: true,
         service: 'chat-service',
-        status: 'COMPLETED',
+        status: 'COMPLETED', 
         transactionId: transactionId
       });
       console.log('after sennding the message hahaha')
     } catch (error:any) {
-      console.error('Order processing failed:', error);
+      console.error('Order processing failed:', error); 
       
       // Notify orchestrator of failure
       await kafkaConfig.sendMessage('chat.response', {
         ...paymentEvent,
-        service: 'chat-service',
+        service: 'chat-service', 
         status: 'FAILED',
         error: error.message
       });
@@ -97,16 +107,7 @@ export class ChatService {
     return await this.chatRoomRepo.getAllChatRooms();
   }
 
-  async createChatRoom(data:{courseId:string, courseName:string, thumbnail:string, tutorId:string}):Promise<{success:boolean}>{
-    console.log('trig service',data)
-    const {courseId, courseName, thumbnail, tutorId} = data;
-    const chatRoom = await this.chatRoomRepo.createChatRoom(courseId, courseName, thumbnail, tutorId);
-    console.log('created chatroom (service)')
-    if(!chatRoom){
-      return {success:false}
-    }
-    return {success:true}
-  }
+
 
   async getUserChatRooms(data:{userId:string}){
     return await this.chatRoomRepo.getUserChatRooms(data.userId)

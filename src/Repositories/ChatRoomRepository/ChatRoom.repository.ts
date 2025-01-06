@@ -38,6 +38,7 @@ export class ChatRoomRepository {
 
       async addParticipant(courseId:string, userId:string){
         try {
+          console.log(courseId, userId)
             return await ChatRoomModel.findOneAndUpdate(
                 {courseId},
                 {$addToSet: {participants:userId}},
@@ -45,6 +46,7 @@ export class ChatRoomRepository {
             )
         } catch (error) {
             console.log(error)
+            throw Error
         }
       }
 

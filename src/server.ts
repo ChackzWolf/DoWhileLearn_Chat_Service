@@ -7,5 +7,5 @@ const controller = new ChatController()
 controller.start()
   .catch(error => console.error('Failed to start kafka order service:', error));
 
-startGrpcServer()
+startGrpcServer() 
 connectDB() 

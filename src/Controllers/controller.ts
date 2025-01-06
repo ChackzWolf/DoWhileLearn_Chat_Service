@@ -48,6 +48,7 @@ export class ChatController {
       
       console.log('START', paymentEvent, 'MESAGe haaha')
       await chatService.addParticipantToChatRoom(paymentEvent);
+      // await chatService.createChatRoom(paymentEvent)
     } catch (error) {
       console.error('Error processing message:', error);
     }
