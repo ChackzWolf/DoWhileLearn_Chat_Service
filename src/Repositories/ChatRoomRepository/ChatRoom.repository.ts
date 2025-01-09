@@ -1,6 +1,8 @@
+import { IChatRoom } from "../../Interfaces/IModels/IChatRooms";
+import { IChatRoomRepository } from "../../Interfaces/IRepository/IChatRoomRepository";
 import { ChatRoomModel } from "../../Schemas/ChatRoomSchema/ChatRoom.schema";
 
-export class ChatRoomRepository {
+export class ChatRoomRepository implements IChatRoomRepository {
     async updateLastMessage(courseId: string, message: { userId: string; username: string; content: string }): Promise<void> {
         await ChatRoomModel.findOneAndUpdate(
           { courseId },
@@ -18,39 +20,56 @@ export class ChatRoomRepository {
         }));
       }
 
-      async createChatRoom(courseId:string,courseName:string, thumbnail:string, tutorId:string){
+      async createChatRoom(courseId: string, courseName: string, thumbnail: string, tutorId: string): Promise<IChatRoom> {
         try {
-            return await ChatRoomModel.create({
-                courseId:courseId,
-                name:courseName,
-                thumbnail:thumbnail,
-                tutorId:tutorId,
-                lastMessage:{
-                    userId:'123',
-                    username:'Tutor',
-                    content:"Start your discussion"
-                }
-            })
-        } catch (error) {
-            console.log(error)
-        }
-      }
-
-      async addParticipant(courseId:string, userId:string){
-        try {
-          console.log(courseId, userId)
             return await ChatRoomModel.findOneAndUpdate(
-                {courseId},
-                {$addToSet: {participants:userId}},
-                {new:true, upsert:true}
-            )
+                { courseId: courseId },
+                {
+                    courseId: courseId,
+                    name: courseName,
+                    thumbnail: thumbnail,
+                    tutorId: tutorId,
+                    lastMessage: {
+                        userId: '123',
+                        username: 'Tutor',
+                        content: "Start your discussion"
+                    }
+                },
+                { new: true, upsert: true }
+            );
         } catch (error) {
-            console.log(error)
-            throw Error
+            console.log(error);
+            throw(error);
         }
-      }
+    }
 
-      async removeParticipant(courseId:string, userId:string){
+    async participantExists(courseId: string, userId: string): Promise<boolean> {
+        const chatRoom = await ChatRoomModel.findOne({ courseId, participants: userId });
+        return !!chatRoom;
+    }
+    
+    async addParticipant(courseId: string, userId: string): Promise<IChatRoom | null> {
+        try {
+            console.log(courseId, userId);
+            
+            const exists = await this.participantExists(courseId, userId);
+            if (exists) {
+                console.log('Participant already exists');
+                return null;
+            }
+    
+            return await ChatRoomModel.findOneAndUpdate(
+                { courseId },
+                { $addToSet: { participants: userId } },
+                { new: true, upsert: true }
+            );
+        } catch (error: any) {
+            console.log(error);
+            throw error;
+        }
+    }
+
+      async removeParticipant(courseId:string, userId:string):Promise<IChatRoom | null> {
         try {
             return await ChatRoomModel.findOneAndUpdate(
                 {courseId},
@@ -59,14 +78,16 @@ export class ChatRoomRepository {
             )
         } catch (error) {
             console.log(error)
+            throw(error)
         }
       }
 
-    async getUserChatRooms(userId:string){
+    async getUserChatRooms(userId:string):Promise<IChatRoom[]>{
       try {
         return await ChatRoomModel.find({participants:userId}).lean()
       } catch (error) {
         console.log(error)
+        throw error;
       }
     }
 }

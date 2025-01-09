@@ -1,6 +1,7 @@
 import { Schema, model } from "mongoose";
+import { IChatRoom } from "../../Interfaces/IModels/IChatRooms";
 
-const ChatRoomSchema = new Schema({
+const ChatRoomSchema:Schema<IChatRoom> = new Schema({
   courseId: { 
     type: String, 
     required: true, 
@@ -29,4 +30,4 @@ const ChatRoomSchema = new Schema({
   },
 },{ timestamps: true });;
 
-export const ChatRoomModel = model("ChatRoom", ChatRoomSchema);
+export const ChatRoomModel = model<IChatRoom>("ChatRoom", ChatRoomSchema);

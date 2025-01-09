@@ -3,13 +3,19 @@ import { KafkaMessage } from 'kafkajs';
 import { ChatService } from '../Services/Chat.service';
 import * as grpc from '@grpc/grpc-js';
 import { OrderEventData } from "../Interfaces/DTOs/IController";
+import { IChatService } from "../Interfaces/IService.Interface/IChatService.interface";
+import { IChatController } from "../Interfaces/IController.interface/IChatController.interface";
 
-const chatService = new ChatService();
-export class ChatController {
-  private chatService: ChatService;
 
-  constructor() {
-    this.chatService = new ChatService();
+
+
+export class ChatController implements IChatController {
+
+
+  private chatService: IChatService;
+
+  constructor(chatService:IChatService) {
+    this.chatService = chatService
   } 
 
   async start(): Promise<void> {
@@ -47,8 +53,7 @@ export class ChatController {
       const paymentEvent: OrderEventData = JSON.parse(message.value?.toString() || '');
       
       console.log('START', paymentEvent, 'MESAGe haaha')
-      await chatService.addParticipantToChatRoom(paymentEvent);
-      // await chatService.createChatRoom(paymentEvent)
+      await this.chatService.handleCoursePurchase(paymentEvent)
     } catch (error) {
       console.error('Error processing message:', error);
     }
@@ -60,19 +65,15 @@ export class ChatController {
       const paymentEvent: OrderEventData = JSON.parse(message.value?.toString() || '');
       const {userId,courseId,transactionId} =  paymentEvent;
       console.log('START Role back', paymentEvent, 'MESAGe haaha');
-      await chatService.deleteParticipantFromChatRoom(userId,courseId,transactionId);
+      await this.chatService.deleteParticipantFromChatRoom(userId,courseId,transactionId);
     } catch (error) {
       console.error('Error processing message:', error);
     }
   }
 
   // gRPC Service Implementation
-  static async saveMessage(
-    call: grpc.ServerUnaryCall<any, any>,
-    callback: grpc.sendUnaryData<any>
-  ) {
+  async saveMessage(call: grpc.ServerUnaryCall<any, any>,callback: grpc.sendUnaryData<any>):Promise<void> {
     try {
-      const chatService = new ChatService();
       const request = call.request;  
       console.log(request, "request");
       const data = {
@@ -82,7 +83,7 @@ export class ChatController {
         content: request.content,
       } 
 
-      const response  = await chatService.createMessage(data);
+      const response  = await this.chatService.createMessage(data);
       console.log('response', response);
       if(!response){
         console.log('sending failed')
@@ -96,17 +97,14 @@ export class ChatController {
   }
 
   // gRPC Service Implementation for fetching messages
-  static async getCourseMessages(
-    call: grpc.ServerUnaryCall<any, any>,
-    callback: grpc.sendUnaryData<any>
-  ) {
+  async getCourseMessages(call: grpc.ServerUnaryCall<any, any>,callback: grpc.sendUnaryData<any>):Promise<void> {
     console.log('trig');
     try {
 
       const {courseId, userId, limit, before} = call.request;
       
-      const response = await chatService.getCourseMessages(courseId,limit,before);
-      await chatService.markMessagesAsRead(userId,courseId);
+      const response = await this.chatService.getCourseMessages(courseId,limit,before);
+      await this.chatService.markMessagesAsRead(userId,courseId);
 
       const data = {
         messages : response.messages,
@@ -121,9 +119,9 @@ export class ChatController {
     }
   }
 
-  static async getChatRooms(call: grpc.ServerUnaryCall<any,any>, callback: grpc.sendUnaryData<any>){
+  async getChatRooms(call: grpc.ServerUnaryCall<any,any>, callback: grpc.sendUnaryData<any>):Promise<void> { 
     try {
-      const chatRooms = await chatService.getChatRooms();
+      const chatRooms = await this.chatService.getChatRooms();
       console.log(chatRooms);
       callback(null, {chatRooms});
     } catch (error) {
@@ -131,11 +129,11 @@ export class ChatController {
     }
   }
 
-  static async createChatRoom(call: grpc.ServerUnaryCall<any,any>, callback: grpc.sendUnaryData<any>){
+  async createChatRoom(call: grpc.ServerUnaryCall<any,any>, callback: grpc.sendUnaryData<any>):Promise<void> { 
     try {
       console.log('trig', call.request);
       const data = call.request;
-      const response = await chatService.createChatRoom(data);
+      const response = await this.chatService.createChatRoom(data);
       console.log(response), 'response from creating a chat room (controller)';
       callback(null, response);
     } catch (error) {
@@ -143,18 +141,18 @@ export class ChatController {
     }
   }
 
-  static async chatRoomForUser(call: grpc.ServerUnaryCall<any,any>, callback: grpc.sendUnaryData<any>){
+  async chatRoomForUser(call: grpc.ServerUnaryCall<any,any>, callback: grpc.sendUnaryData<any>):Promise<void> {
     console.log('trig fetch user chatrooms', call.request);
     const data = call.request;
-    const response = await chatService.getUserChatRooms(data);
+    const response = await this.chatService.getUserChatRooms(data);
     console.log(response,'this is the response')
 
     callback(null, {chatRooms:response});
   }
 
-  async chatRoomForTutor(call: grpc.ServerUnaryCall<any,any>, callback: grpc.sendUnaryData<any>){
+  async chatRoomForTutor(call: grpc.ServerUnaryCall<any,any>, callback: grpc.sendUnaryData<any>):Promise<void> {
     const data = call.request;
-    const response = await chatService.getUserChatRooms(data);
+    const response = await this.chatService.getUserChatRooms(data);
     callback(null, response);
   }
 } 

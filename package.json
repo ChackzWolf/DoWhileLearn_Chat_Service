@@ -24,6 +24,7 @@
     "typescript": "^5.7.2"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.722.0",
     "@prisma/client": "^5.22.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
@@ -33,6 +34,7 @@
     "mongoose": "^8.8.0",
     "nodemon": "^3.1.7",
     "socket.io": "^4.8.1",
-    "ts-node": "^10.9.2"
+    "ts-node": "^10.9.2",
+    "uuid": "^11.0.4"
   }
 }

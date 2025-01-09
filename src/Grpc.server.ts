@@ -4,6 +4,10 @@ import * as grpc from "@grpc/grpc-js";
 import * as protoLoader from "@grpc/proto-loader";
 import { ChatController } from "./Controllers/controller";
 import { configs } from "./Configs/ENV.config";
+import { ChatService } from "./Services/Chat.service";
+import { ChatMessageRepository } from "./Repositories/MessageRepository/Message.repository";
+import { ReadStatusRepository } from "./Repositories/ReadStatusRepository/ReadStatus.repository";
+import { ChatRoomRepository } from "./Repositories/ChatRoomRepository/ChatRoom.repository";
 
 
 export const startGrpcServer = () => {
@@ -31,15 +35,18 @@ export const startGrpcServer = () => {
       console.log(`gRPC server is running on port ${port}`);
     }
   ); 
-
-
+  const chatRoomRepo = new ChatRoomRepository();
+  const readStatusRepo = new ReadStatusRepository();
+  const chatMessageRepository = new ChatMessageRepository();
+  const chatService = new ChatService(chatMessageRepository,readStatusRepo,chatRoomRepo);
+  const chatController = new ChatController(chatService);
 
 
   server.addService(chatProto.ChatService.service , {
-    saveMessage: ChatController.saveMessage,
-    GetMessages: ChatController.getCourseMessages,
-    GetChatRooms: ChatController.getChatRooms,
-    CreateChatRoom: ChatController.createChatRoom,
-    GetUserChatRooms: ChatController.chatRoomForUser,
+    saveMessage: chatController.saveMessage.bind(chatController),
+    GetMessages: chatController.getCourseMessages.bind(chatController),
+    GetChatRooms: chatController.getChatRooms.bind(chatController),
+    CreateChatRoom: chatController.createChatRoom.bind(chatController),
+    GetUserChatRooms: chatController.chatRoomForUser.bind(chatController),
   });
 };

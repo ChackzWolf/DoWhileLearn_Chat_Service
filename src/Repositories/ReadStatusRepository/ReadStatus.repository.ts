@@ -1,6 +1,7 @@
 import { ReadStatusModel } from "../../Schemas/ReadStatusSchema/ReadStatus.schema";
+import { IReadStatusRepository } from "../../Interfaces/IRepository/IReadStatusRepository.interface";
 
-export class ReadStatusRepository {
+export class ReadStatusRepository implements IReadStatusRepository {
   async getLastReadTimestamp(userId: string, courseId: string): Promise<Date> {
     const status = await ReadStatusModel.findOne({ userId, courseId });
     return status ? status.lastRead : new Date(0); // Default to the earliest date
