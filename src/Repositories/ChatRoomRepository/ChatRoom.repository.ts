@@ -22,37 +22,56 @@ export class ChatRoomRepository implements IChatRoomRepository {
 
       async createChatRoom(courseId: string, courseName: string, thumbnail: string, tutorId: string): Promise<IChatRoom> {
         try {
-            return await ChatRoomModel.findOneAndUpdate(
-                { courseId: courseId },
-                {
-                    courseId: courseId,
+         // await  ChatRoomModel.collection.dropIndex('participants_1');
+            // Try to find the existing chat room
+            let chatRoom = await ChatRoomModel.findOne({ courseId });
+    
+            if (chatRoom) {
+                console.log('chat room exists', chatRoom);
+                // If the chat room exists, just update the non-critical fields
+                chatRoom.name = courseName;
+                chatRoom.thumbnail = thumbnail;
+                chatRoom.tutorId = tutorId;
+    
+                // Ensure participants is always an array and not undefined
+                chatRoom.participants = chatRoom.participants || [];
+    
+                // Save the updated chat room
+                return await chatRoom.save();
+            } else {
+                console.log('creating new chat room');
+                // If no chat room exists, create a new one with the initial message and participants
+                return await ChatRoomModel.create({
+                    courseId,
                     name: courseName,
                     thumbnail: thumbnail,
-                    tutorId: tutorId,
+                    tutorId,
                     lastMessage: {
                         userId: '123',
                         username: 'Tutor',
                         content: "Start your discussion"
-                    }
-                },
-                { new: true, upsert: true }
-            );
+                    },
+                    participants: []  // Initialize an empty participants array
+                });
+            }
         } catch (error) {
             console.log(error);
-            throw(error);
+            throw error;
         }
     }
 
     async participantExists(courseId: string, userId: string): Promise<boolean> {
+      console.log(courseId, userId, 'this is course id and user id in participant exists');
         const chatRoom = await ChatRoomModel.findOne({ courseId, participants: userId });
         return !!chatRoom;
     }
     
     async addParticipant(courseId: string, userId: string): Promise<IChatRoom | null> {
         try {
-            console.log(courseId, userId);
+            console.log(courseId, userId, 'triggering add participant');
             
             const exists = await this.participantExists(courseId, userId);
+            console.log(exists, 'thi si participant expist or not')
             if (exists) {
                 console.log('Participant already exists');
                 return null;

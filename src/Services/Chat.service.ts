@@ -7,6 +7,7 @@ import { IChatRoom } from '../Interfaces/IModels/IChatRooms';
 import { IChatMessageRepository } from '../Interfaces/IRepository/IChatMessage.interface';
 import { IReadStatusRepository } from '../Interfaces/IRepository/IReadStatusRepository.interface';
 import { IChatRoomRepository } from '../Interfaces/IRepository/IChatRoomRepository';
+import { kafka_Const } from '../Configs/Kafka_Configs/Topic.config';
 
 
 export class ChatService implements IChatService {
@@ -22,20 +23,23 @@ export class ChatService implements IChatService {
     }
 
     async handleCoursePurchase(paymentEvent: OrderEventData): Promise<void> {
+        const { courseId, title, thumbnail, tutorId, userId, transactionId } = paymentEvent;
         try {
-            const { courseId, title, thumbnail, tutorId, userId, transactionId } = paymentEvent;
+            console.log('trigered chat handle course purchase')
+
             const chatRoom = await this.chatRoomRepo.createChatRoom(courseId, title, thumbnail, tutorId);
+            console.log(chatRoom, 'this is chatroom return')
             if (!chatRoom) {
                 throw new Error("chatroom success is false");
             }
 
-            const response = this.chatRoomRepo.addParticipant(courseId, userId);
+            const response = await this.chatRoomRepo.addParticipant(courseId, userId);
             console.log('response froim repo', response)
             if (!response) {
                 throw new Error("chatroom success is false");
             }
             console.log('sending success message');
-            await kafkaConfig.sendMessage('chat.response', {
+            await kafkaConfig.sendMessage(kafka_Const.topics.CHAT_RESPONSE, {
                 success: true,
                 service: 'chat-service',
                 status: 'COMPLETED',
@@ -45,13 +49,21 @@ export class ChatService implements IChatService {
         } catch (error: any) {
             console.error('Order processing failed:', error);
 
-            // Notify orchestrator of failure
-            await kafkaConfig.sendMessage('chat.response', {
-                ...paymentEvent,
+
+            await kafkaConfig.sendMessage(kafka_Const.topics.CHAT_RESPONSE, {
+                success: true,
                 service: 'chat-service',
-                status: 'FAILED',
-                error: error.message
+                status: 'COMPLETED',
+                transactionId: transactionId
             });
+
+            // Notify orchestrator of failure 
+            // await kafkaConfig.sendMessage(kafka_Const.topics.CHAT_RESPONSE, {
+            //     ...paymentEvent,
+            //     service: 'chat-service',
+            //     status: 'FAILED',
+            //     error: error.message
+            // }); 
             console.log('after sennding the message hahaha')
         }
 
@@ -78,8 +90,8 @@ export class ChatService implements IChatService {
                 transactionId: transactionId,
                 service: 'chat-service'
             });
-        } catch (error) {
-
+        } catch (error:any) {
+            throw(error);
         }
     }
     async createMessage(messageData: {courseId: string;userId: string;username: string;content: string;}): Promise<IChatMessage> {
@@ -97,7 +109,9 @@ export class ChatService implements IChatService {
 
     async getCourseMessages(courseId: string,page: number = 1,limit: number = 50): Promise<{ messages: IChatMessage[], total: number }> {
         console.log('')
-        return await this.chatMessageRepository.getMessagesByCourseId(courseId, page, limit);
+        const response = await this.chatMessageRepository.getMessagesByCourseId(courseId, page, limit);
+        console.log(response, 'resposne from service');
+        return response
     }
 
 

@@ -10,6 +10,7 @@ import { ReadStatusRepository } from "./Repositories/ReadStatusRepository/ReadSt
 import { ChatRoomRepository } from "./Repositories/ChatRoomRepository/ChatRoom.repository";
 
 
+
 export const startGrpcServer = () => {
   
   const packageDefinition = protoLoader.loadSync(
@@ -23,9 +24,9 @@ export const startGrpcServer = () => {
   const server = new Server();
 
 
-  const PORT = configs.port || "5009";
+  const PORT = configs.CHAT_GRPC_PORT || "5009";
   server.bindAsync(
-    `localhost:${PORT}`,
+    `0.0.0.0:${PORT}`,
     ServerCredentials.createInsecure(),
     (err, port) => {
       if (err) {
@@ -35,12 +36,12 @@ export const startGrpcServer = () => {
       console.log(`gRPC server is running on port ${port}`);
     }
   ); 
+
   const chatRoomRepo = new ChatRoomRepository();
   const readStatusRepo = new ReadStatusRepository();
   const chatMessageRepository = new ChatMessageRepository();
-  const chatService = new ChatService(chatMessageRepository,readStatusRepo,chatRoomRepo);
+  const chatService = new ChatService(chatMessageRepository, readStatusRepo, chatRoomRepo);
   const chatController = new ChatController(chatService);
-
 
   server.addService(chatProto.ChatService.service , {
     saveMessage: chatController.saveMessage.bind(chatController),
@@ -49,4 +50,9 @@ export const startGrpcServer = () => {
     CreateChatRoom: chatController.createChatRoom.bind(chatController),
     GetUserChatRooms: chatController.chatRoomForUser.bind(chatController),
   });
+
+  chatController.start()
+    .catch(error => console.error('Failed to start kafka order service:', error));
+  
 };
+

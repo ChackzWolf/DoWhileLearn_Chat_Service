@@ -17,7 +17,7 @@ export class ChatMessageRepository  implements IChatMessageRepository {
         .limit(limit),
       ChatMessageModel.countDocuments({ courseId })
     ]);
-
+    console.log(messages, total, 'from repo')
     return { messages, total };
   }
 

@@ -1,12 +1,12 @@
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import { config } from '../config';
+import { configs } from '../Configs/ENV.config';
 import { v4 as uuid } from 'uuid';
 
 const s3Client = new S3Client({
-  region: config.aws.region,
+  region: configs.aws.AWS_REGION,
   credentials: {
-    accessKeyId: config.aws.accessKeyId,
-    secretAccessKey: config.aws.secretAccessKey
+    accessKeyId: configs.aws.AWS_ACCESS_KEY_ID,
+    secretAccessKey: configs.aws.AWS_SECRET_ACCESS_KEY,
   }
 });
 
@@ -17,13 +17,13 @@ export const uploadFileToS3 = async (
   const fileKey = `${uuid()}-${fileName}`;
   
   await s3Client.send(new PutObjectCommand({
-    Bucket: config.aws.bucketName,
+    Bucket: configs.aws.BUCKET_NAME,
     Key: fileKey,
     Body: buffer,
     ContentType: getContentType(fileName)
   }));
 
-  return `https://${config.aws.bucketName}.s3.${config.aws.region}.amazonaws.com/${fileKey}`;
+  return `https://${configs.aws.BUCKET_NAME}.s3.${configs.aws.AWS_REGION}.amazonaws.com/${fileKey}`;
 };
 
 const getContentType = (fileName: string): string => {

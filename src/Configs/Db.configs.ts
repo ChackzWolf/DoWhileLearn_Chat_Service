@@ -4,11 +4,11 @@ import { configs } from "./ENV.config";
   
 const connectDB = async () => {
   try { 
-    if (!configs.MONGODB_URL_COURSE) {
+    if (!configs.MONGODB_URL_CHAT) {
       throw new Error("MONGO_URI is not defined in the environment variables");
     }
 
-    await mongoose.connect(configs.MONGODB_URL_COURSE);
+    await mongoose.connect(configs.MONGODB_URL_CHAT);
     console.log("Chat Service Database connected");
   } catch (error: any) {
     console.error("Chat service error connecting to MongoDB:", error.message);

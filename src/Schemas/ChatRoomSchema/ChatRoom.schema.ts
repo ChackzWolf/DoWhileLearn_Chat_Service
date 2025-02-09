@@ -21,7 +21,6 @@ const ChatRoomSchema:Schema<IChatRoom> = new Schema({
   },
   participants: [{
     type:String,
-    unique:true
   }],
   lastMessage: {
     userId: { type: String, required: true },
