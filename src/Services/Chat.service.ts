@@ -95,6 +95,7 @@ export class ChatService implements IChatService {
         }
     }
     async createMessage(messageData: {courseId: string;userId: string;username: string;content: string;imageUrl:string}): Promise<IChatMessage> {
+        console.log(messageData, 'message thats going to save')
         const { courseId, content, userId, username } = messageData;
         const data = {
             userId, username, content

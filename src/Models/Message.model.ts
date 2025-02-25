@@ -6,6 +6,7 @@ export interface IChatMessage extends Document {
   username: string;
   content: string;
   timestamp: Date;
+  imageUrl: string;
 }
 
 const ChatMessageSchema: Schema = new Schema({
