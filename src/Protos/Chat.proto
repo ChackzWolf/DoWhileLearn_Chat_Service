@@ -44,6 +44,7 @@ message ChatRoomMessage {
 }
 
 
+
 message Message {
   string id = 1;
   string courseId = 2;
@@ -51,7 +52,9 @@ message Message {
   string content = 4;
   string timestamp = 5;
   string username = 6;
+  string imageUrl = 7;
 }
+
 
 message MessageResponse {
   bool success = 1;

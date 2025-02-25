@@ -15,6 +15,10 @@ const messageSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  imageUrl:{
+    type: String,
+    default: "NaN"
+  },
   timestamp: {
     type: Date,
     default: Date.now

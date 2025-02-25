@@ -77,6 +77,7 @@ export class ChatController implements IChatController {
                 courseId: request.courseId,
                 userId: request.userId,
                 username: request.username,
+                imageUrl: request.imageUrl,
                 content: request.content,
             }
 
