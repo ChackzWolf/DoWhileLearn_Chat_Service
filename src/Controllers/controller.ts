@@ -143,7 +143,6 @@ export class ChatController implements IChatController {
         console.log('trig fetch user chatrooms', call.request);
         const data = call.request;
         const response = await this.chatService.getUserChatRooms(data);
-        console.log(response, 'this is the response')
         callback(null, { chatRooms: response });
     }
 
