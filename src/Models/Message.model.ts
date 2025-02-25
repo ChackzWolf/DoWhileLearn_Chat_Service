@@ -1,3 +1,4 @@
+import { required } from 'joi';
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IChatMessage extends Document {
@@ -14,6 +15,7 @@ const ChatMessageSchema: Schema = new Schema({
   userId: { type: String, required: true },
   username: { type: String, required: true },
   content: { type: String, required: true },
+  imageUrl: {type:String, default: "NaN"},
   timestamp: { type: Date, default: Date.now }
 });
 
