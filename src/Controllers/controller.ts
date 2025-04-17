@@ -87,7 +87,7 @@ export class ChatController implements IChatController {
                 console.log('sending failed')
                 callback(null, { message: request.content, success: false })
             }
-            console.log('sednign success')
+            console.log('sednign success',response)
             callback(null, { message: request.content, success: true })
         } catch (error) {
             callback(error as grpc.ServiceError, null);
